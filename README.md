@@ -2,87 +2,106 @@
 
 A clean, focused personal finance web application built on the 80/20 principle - delivering 80% of value with 20% of features.
 
-## Core Features (The 20% That Matters)
+**Live Demo**: Deployed on Vercel with Upstash Redis database
 
-### 1. **Net Worth Dashboard** 💰
+## Core Features
+
+### Net Worth Dashboard
 - Single glance view of your total financial position
 - Real-time calculation of Assets vs Liabilities
 - Quick monthly income/expense overview
 
-### 2. **Transaction Tracking** 💸
+### Transaction Tracking
 - Simple income and expense logging
 - Category-based organization
+- Search and filter transactions
 - Chronological history view
 
-### 3. **Account Management** 🏦
+### Account Management
 - Track multiple accounts (checking, savings, investments, credit cards, loans)
 - Real-time balance updates
 - Asset vs Liability classification
 
-### 4. **Budget Management** 📊
+### Budget Management
 - Set spending limits by category
 - Visual progress bars showing budget usage
 - Monthly tracking with alerts (75% warning, 90% danger)
 
+### Authentication
+- PIN-based login system
+- Secure password hashing (PBKDF2)
+- Session management with 7-day expiry
+- Change PIN functionality
+
 ## Why These Features?
 
-Following Steve Jobs' philosophy of "focus and simplicity," these four features cover the essential needs:
+Following Steve Jobs' philosophy of "focus and simplicity," these features cover the essential needs:
 
 - **Know where you stand** (Net Worth Dashboard)
 - **Track your money** (Transactions)
 - **Organize your accounts** (Accounts)
 - **Control your spending** (Budgets)
+- **Secure your data** (Authentication)
 
 Everything else is noise.
 
-## Getting Started
-
-1. Open `index.html` in your web browser
-2. Add your accounts
-3. Start logging transactions
-4. Set your budgets
-5. Monitor your financial health
-
-## Data Storage
-
-All data is stored locally in your browser using LocalStorage. Your financial data never leaves your device.
-
 ## Technical Stack
 
-- **HTML5** - Clean semantic structure
-- **CSS3** - Modern, responsive design with gradient theme
-- **Vanilla JavaScript** - No frameworks, no dependencies, just pure performance
-- **LocalStorage API** - Client-side data persistence
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Backend**: Vercel Serverless Functions
+- **Database**: Upstash Redis (via @vercel/kv)
+- **Authentication**: PBKDF2 hashing with secure sessions
+- **Hosting**: Vercel
+
+## Getting Started
+
+### Local Development
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up Upstash Redis and add environment variables
+4. Run locally with Vercel CLI: `vercel dev`
+
+### Environment Variables
+
+Required for Vercel deployment:
+- `KV_REST_API_URL` - Upstash Redis REST URL
+- `KV_REST_API_TOKEN` - Upstash Redis REST token
 
 ## Design Principles
 
-✅ **Focus** - Only essential features  
-✅ **Simplicity** - Intuitive interface  
-✅ **Privacy** - Local data storage  
-✅ **Speed** - No backend, instant response  
-✅ **Accessibility** - Clean, readable design  
+- **Focus** - Only essential features
+- **Simplicity** - Intuitive interface
+- **Security** - PIN authentication with hashed storage
+- **Speed** - Minimal dependencies, fast load times
+- **Professional** - Clean, modern UI design
 
-## Browser Compatibility
+## API Endpoints
 
-Works in all modern browsers that support:
-- ES6 JavaScript
-- CSS Grid
-- LocalStorage API
-- Flexbox
+- `POST /api/auth` - Authentication (register, login, logout, verify, changepin)
+- `GET/POST /api/accounts` - Account management
+- `GET/POST /api/transactions` - Transaction management
+- `GET/POST /api/budgets` - Budget management
 
-## Future Considerations (The Other 80%)
+## Deployment
 
-Features intentionally NOT included to maintain focus:
-- ❌ Bank account synchronization
-- ❌ Investment portfolio tracking
-- ❌ Bill reminders
-- ❌ Receipt scanning
-- ❌ Tax preparation
-- ❌ Debt payoff calculators
-- ❌ Retirement planning
-- ❌ Multi-user support
-- ❌ Mobile apps
-- ❌ Cloud sync
+This app is configured for Vercel deployment:
+
+1. Push to GitHub
+2. Connect repository to Vercel
+3. Add Upstash Redis integration
+4. Deploy automatically on push
+
+## Features NOT Included (By Design)
+
+Following the 80/20 principle, these are intentionally excluded:
+- Bank account synchronization
+- Investment portfolio tracking
+- Bill reminders
+- Receipt scanning
+- Tax preparation
+- Multi-user support
+- Mobile apps
 
 These can be added later if the core features prove valuable.
 
