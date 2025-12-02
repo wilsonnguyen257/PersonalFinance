@@ -504,6 +504,61 @@ class PersonalFinanceApp {
         document.getElementById('budgetModal').classList.add('active');
     }
 
+    showChangePinModal() {
+        document.getElementById('changePinModal').classList.add('active');
+        document.getElementById('changePinError').textContent = '';
+        document.getElementById('changePinForm').reset();
+    }
+
+    async changePin(event) {
+        event.preventDefault();
+        const currentPin = document.getElementById('currentPin').value;
+        const newPin = document.getElementById('newPin').value;
+        const confirmNewPin = document.getElementById('confirmNewPin').value;
+        const errorEl = document.getElementById('changePinError');
+        const btn = document.getElementById('changePinBtn');
+
+        if (newPin !== confirmNewPin) {
+            errorEl.textContent = 'New PINs do not match';
+            return;
+        }
+
+        if (!/^\d{4,}$/.test(newPin)) {
+            errorEl.textContent = 'PIN must be at least 4 digits';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Changing...';
+        errorEl.textContent = '';
+
+        try {
+            const res = await fetch('/api/auth?action=changepin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: this.userId, 
+                    currentPin, 
+                    newPin 
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                this.closeModal('changePinModal');
+                alert('PIN changed successfully');
+            } else {
+                errorEl.textContent = data.error || 'Failed to change PIN';
+            }
+        } catch (error) {
+            errorEl.textContent = 'Connection error. Please try again.';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Change PIN';
+    }
+
     closeModal(modalId) {
         document.getElementById(modalId).classList.remove('active');
     }

@@ -112,6 +112,43 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true });
         }
 
+        // Change PIN
+        if (req.method === 'POST' && action === 'changepin') {
+            const { username, currentPin, newPin } = req.body;
+            
+            if (!username || !currentPin || !newPin) {
+                return res.status(400).json({ error: 'All fields required' });
+            }
+
+            if (newPin.length < 4) {
+                return res.status(400).json({ error: 'New PIN must be at least 4 digits' });
+            }
+
+            const user = await kv.get(`user:${username}`);
+            if (!user) {
+                return res.status(401).json({ error: 'User not found' });
+            }
+
+            // Verify current PIN
+            const hashedCurrentPin = hashPin(currentPin, user.salt);
+            if (hashedCurrentPin !== user.hashedPin) {
+                return res.status(401).json({ error: 'Current PIN is incorrect' });
+            }
+
+            // Create new salt and hash for new PIN
+            const newSalt = crypto.randomBytes(16).toString('hex');
+            const hashedNewPin = hashPin(newPin, newSalt);
+            
+            await kv.set(`user:${username}`, {
+                ...user,
+                salt: newSalt,
+                hashedPin: hashedNewPin,
+                updatedAt: new Date().toISOString()
+            });
+
+            return res.status(200).json({ success: true, message: 'PIN changed successfully' });
+        }
+
         res.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
         console.error('Auth error:', error);
