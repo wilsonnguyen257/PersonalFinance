@@ -40,7 +40,7 @@ class PersonalFinanceApp {
     showMainApp() {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('currentUser').textContent = `👤 ${this.userId}`;
+        document.getElementById('currentUser').textContent = this.userId;
     }
 
     showLoginTab(tab) {
@@ -174,9 +174,6 @@ class PersonalFinanceApp {
         // Set today's date as default for transaction form
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('transactionDate').value = today;
-        
-        // Setup keyboard shortcuts
-        this.setupKeyboardShortcuts();
         
         // Load data from API or localStorage
         await this.loadData();
@@ -494,34 +491,6 @@ class PersonalFinanceApp {
             .reduce((sum, txn) => sum + txn.amount, 0);
     }
 
-    getMonthlyTrends() {
-        const trends = [];
-        const now = new Date();
-        
-        // Get last 6 months
-        for (let i = 5; i >= 0; i--) {
-            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const month = date.getMonth();
-            const year = date.getFullYear();
-            
-            const monthTransactions = this.transactions.filter(txn => {
-                const txnDate = new Date(txn.date);
-                return txnDate.getMonth() === month && txnDate.getFullYear() === year;
-            });
-            
-            const expenses = monthTransactions
-                .filter(txn => txn.type === 'expense')
-                .reduce((sum, txn) => sum + txn.amount, 0);
-            
-            trends.push({
-                month: date.toLocaleDateString('en-US', { month: 'short' }),
-                amount: expenses
-            });
-        }
-        
-        return trends;
-    }
-
     // Modal Management
     showAddAccountModal() {
         document.getElementById('accountModal').classList.add('active');
@@ -573,8 +542,7 @@ class PersonalFinanceApp {
         if (this.accounts.length === 0) {
             grid.innerHTML = `
                 <div class="empty-state" style="grid-column: 1 / -1;">
-                    <div class="empty-state-icon">🏦</div>
-                    <div class="empty-state-text">No accounts yet. Add your first account to get started!</div>
+                    <div class="empty-state-text">No accounts yet. Add your first account to get started.</div>
                 </div>
             `;
             return;
@@ -609,8 +577,7 @@ class PersonalFinanceApp {
         if (displayTransactions.length === 0 && this.transactions.length === 0) {
             list.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">💸</div>
-                    <div class="empty-state-text">No transactions yet. Start tracking your income and expenses!</div>
+                    <div class="empty-state-text">No transactions yet. Start tracking your income and expenses.</div>
                 </div>
             `;
             return;
@@ -619,7 +586,6 @@ class PersonalFinanceApp {
         if (displayTransactions.length === 0) {
             list.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">🔍</div>
                     <div class="empty-state-text">No transactions match your search.</div>
                 </div>
             `;
@@ -653,8 +619,7 @@ class PersonalFinanceApp {
         if (this.budgets.length === 0) {
             list.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📊</div>
-                    <div class="empty-state-text">No budgets set. Create budget categories to track your spending!</div>
+                    <div class="empty-state-text">No budgets set. Create budget categories to track your spending.</div>
                 </div>
             `;
             return;
@@ -692,39 +657,11 @@ class PersonalFinanceApp {
         }).join('');
     }
 
-    renderTrends() {
-        const chart = document.getElementById('trendsChart');
-        const trends = this.getMonthlyTrends();
-        
-        if (trends.every(t => t.amount === 0)) {
-            chart.innerHTML = `
-                <div class="empty-state" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                    <div class="empty-state-text">Add transactions to see spending trends</div>
-                </div>
-            `;
-            return;
-        }
-        
-        const maxAmount = Math.max(...trends.map(t => t.amount), 1);
-        
-        chart.innerHTML = trends.map(trend => {
-            const height = (trend.amount / maxAmount) * 100;
-            return `
-                <div class="trend-bar">
-                    <div class="trend-amount">${this.formatCurrency(trend.amount)}</div>
-                    <div class="trend-bar-fill" style="height: ${height}%"></div>
-                    <div class="trend-label">${trend.month}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
     render() {
         this.renderDashboard();
         this.renderAccounts();
-        this.filterTransactions(); // Initialize filtered transactions
+        this.filterTransactions();
         this.renderBudgets();
-        this.renderTrends();
     }
 }
 

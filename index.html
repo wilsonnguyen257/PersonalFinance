@@ -11,7 +11,7 @@
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
             <div class="login-header">
-                <h1>💰 Personal Finance</h1>
+                <h1>Personal Finance</h1>
                 <p>Secure access to your finances</p>
             </div>
             
@@ -62,16 +62,11 @@
     <div id="mainApp" class="container" style="display: none;">
         <header>
             <div class="header-top">
-                <h1>💰 Personal Finance</h1>
+                <h1>Personal Finance</h1>
                 <div class="user-info">
                     <span id="currentUser"></span>
                     <button class="btn btn-secondary btn-sm" onclick="app.logout()">Logout</button>
                 </div>
-            </div>
-            <p class="subtitle">Focus on what matters</p>
-            <div class="header-actions">
-                <button class="btn btn-secondary" onclick="app.exportData()" title="Export your data">📥 Export</button>
-                <button class="btn btn-secondary" onclick="app.importData()" title="Import data">📤 Import</button>
             </div>
         </header>
 
@@ -129,7 +124,7 @@
                 <button class="btn btn-primary" onclick="app.showAddTransactionModal()">+ Add Transaction</button>
             </div>
             <div class="transaction-controls">
-                <input type="text" id="transactionSearch" placeholder="🔍 Search transactions..." 
+                <input type="text" id="transactionSearch" placeholder="Search transactions..." 
                        oninput="app.filterTransactions()">
                 <select id="transactionFilter" onchange="app.filterTransactions()">
                     <option value="all">All Transactions</option>
@@ -139,14 +134,6 @@
             </div>
             <div class="transactions-list" id="transactionsList">
                 <!-- Transactions will be dynamically added here -->
-            </div>
-        </section>
-
-        <!-- Spending Trends -->
-        <section class="section">
-            <h2 style="margin-bottom: 1.5rem;">Monthly Spending Trends</h2>
-            <div class="trends-chart" id="trendsChart">
-                <!-- Chart will be rendered here -->
             </div>
         </section>
 
@@ -254,20 +241,6 @@
     <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="app.handleFileImport(event)">
 
     <!-- Modals (moved outside mainApp for proper z-index) -->
-    <!-- Modal for Adding Account -->
-    <div id="shortcutsToast" class="toast">
-        <div class="toast-header">
-            <strong>⌨️ Keyboard Shortcuts</strong>
-            <span class="close" onclick="app.hideToast()">&times;</span>
-        </div>
-        <div class="toast-body">
-            <div><kbd>A</kbd> Add Account</div>
-            <div><kbd>T</kbd> Add Transaction</div>
-            <div><kbd>B</kbd> Add Budget</div>
-            <div><kbd>?</kbd> Show Shortcuts</div>
-        </div>
-    </div>
-
     <script src="app.js"></script>
 </body>
 </html>
