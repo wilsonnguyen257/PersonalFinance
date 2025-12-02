@@ -5,7 +5,6 @@
   "description": "Personal Finance Manager - Focus on what matters",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'No build step required'",
     "deploy": "vercel --prod"
   },
   "dependencies": {
