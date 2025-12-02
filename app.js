@@ -4,12 +4,170 @@ class PersonalFinanceApp {
         this.transactions = [];
         this.budgets = [];
         this.filteredTransactions = [];
-        this.apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? '' 
-            : '';
-        this.userId = 'default'; // Can be extended for multi-user support
+        this.userId = null;
+        this.sessionToken = null;
         this.isLoading = false;
-        this.init();
+        this.checkSession();
+    }
+
+    // Authentication
+    async checkSession() {
+        const token = localStorage.getItem('sessionToken');
+        if (token) {
+            try {
+                const res = await fetch(`/api/auth?action=verify&token=${token}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    this.sessionToken = token;
+                    this.userId = data.username;
+                    this.showMainApp();
+                    await this.init();
+                    return;
+                }
+            } catch (error) {
+                console.warn('Session verification failed:', error);
+            }
+            localStorage.removeItem('sessionToken');
+        }
+        this.showLoginScreen();
+    }
+
+    showLoginScreen() {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+    }
+
+    showMainApp() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        document.getElementById('currentUser').textContent = `👤 ${this.userId}`;
+    }
+
+    showLoginTab(tab) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const tabs = document.querySelectorAll('.tab-btn');
+        
+        tabs.forEach(t => t.classList.remove('active'));
+        
+        if (tab === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            tabs[0].classList.add('active');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            tabs[1].classList.add('active');
+        }
+        
+        // Clear errors
+        document.getElementById('loginError').textContent = '';
+        document.getElementById('registerError').textContent = '';
+    }
+
+    async login(event) {
+        event.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const pin = document.getElementById('loginPin').value;
+        const errorEl = document.getElementById('loginError');
+        const btn = document.getElementById('loginBtn');
+        
+        btn.disabled = true;
+        btn.textContent = 'Logging in...';
+        errorEl.textContent = '';
+        
+        try {
+            const res = await fetch('/api/auth?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, pin })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('sessionToken', data.sessionToken);
+                this.sessionToken = data.sessionToken;
+                this.userId = data.username;
+                this.showMainApp();
+                await this.init();
+            } else {
+                errorEl.textContent = data.error || 'Login failed';
+            }
+        } catch (error) {
+            errorEl.textContent = 'Connection error. Please try again.';
+        }
+        
+        btn.disabled = false;
+        btn.textContent = 'Login';
+    }
+
+    async register(event) {
+        event.preventDefault();
+        const username = document.getElementById('registerUsername').value.trim();
+        const pin = document.getElementById('registerPin').value;
+        const pinConfirm = document.getElementById('registerPinConfirm').value;
+        const errorEl = document.getElementById('registerError');
+        const btn = document.getElementById('registerBtn');
+        
+        if (pin !== pinConfirm) {
+            errorEl.textContent = 'PINs do not match';
+            return;
+        }
+        
+        if (!/^\d{4,}$/.test(pin)) {
+            errorEl.textContent = 'PIN must be at least 4 digits';
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+        errorEl.textContent = '';
+        
+        try {
+            const res = await fetch('/api/auth?action=register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, pin })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('sessionToken', data.sessionToken);
+                this.sessionToken = data.sessionToken;
+                this.userId = data.username;
+                this.showMainApp();
+                await this.init();
+            } else {
+                errorEl.textContent = data.error || 'Registration failed';
+            }
+        } catch (error) {
+            errorEl.textContent = 'Connection error. Please try again.';
+        }
+        
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+    }
+
+    async logout() {
+        try {
+            await fetch('/api/auth?action=logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: this.sessionToken })
+            });
+        } catch (error) {
+            console.warn('Logout error:', error);
+        }
+        
+        localStorage.removeItem('sessionToken');
+        this.sessionToken = null;
+        this.userId = null;
+        this.accounts = [];
+        this.transactions = [];
+        this.budgets = [];
+        this.showLoginScreen();
     }
 
     async init() {

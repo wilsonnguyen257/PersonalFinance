@@ -7,9 +7,67 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>💰 Personal Finance</h1>
+                <p>Secure access to your finances</p>
+            </div>
+            
+            <div class="login-tabs">
+                <button class="tab-btn active" onclick="app.showLoginTab('login')">Login</button>
+                <button class="tab-btn" onclick="app.showLoginTab('register')">Register</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form" onsubmit="app.login(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" required placeholder="Enter username" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>PIN</label>
+                    <input type="password" id="loginPin" required placeholder="Enter PIN" 
+                           inputmode="numeric" pattern="[0-9]*" minlength="4" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
+                <p class="auth-error" id="loginError"></p>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="registerForm" class="auth-form" style="display: none;" onsubmit="app.register(event)">
+                <div class="form-group">
+                    <label>Choose Username</label>
+                    <input type="text" id="registerUsername" required placeholder="Choose a username" 
+                           minlength="3" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Choose PIN (min 4 digits)</label>
+                    <input type="password" id="registerPin" required placeholder="Choose a PIN" 
+                           inputmode="numeric" pattern="[0-9]*" minlength="4" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm PIN</label>
+                    <input type="password" id="registerPinConfirm" required placeholder="Confirm PIN" 
+                           inputmode="numeric" pattern="[0-9]*" minlength="4" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
+                <p class="auth-error" id="registerError"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until logged in) -->
+    <div id="mainApp" class="container" style="display: none;">
         <header>
-            <h1>💰 Personal Finance</h1>
+            <div class="header-top">
+                <h1>💰 Personal Finance</h1>
+                <div class="user-info">
+                    <span id="currentUser"></span>
+                    <button class="btn btn-secondary btn-sm" onclick="app.logout()">Logout</button>
+                </div>
+            </div>
             <p class="subtitle">Focus on what matters</p>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="app.exportData()" title="Export your data">📥 Export</button>
@@ -104,7 +162,7 @@
         </section>
     </div>
 
-    <!-- Modal for Adding Account -->
+    <!-- Hidden file input for import -->
     <div id="accountModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -195,7 +253,8 @@
     <!-- Hidden file input for import -->
     <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="app.handleFileImport(event)">
 
-    <!-- Keyboard Shortcuts Toast -->
+    <!-- Modals (moved outside mainApp for proper z-index) -->
+    <!-- Modal for Adding Account -->
     <div id="shortcutsToast" class="toast">
         <div class="toast-header">
             <strong>⌨️ Keyboard Shortcuts</strong>
