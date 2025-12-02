@@ -153,15 +153,16 @@ header h1 {
 
 .btn-sm {
     padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.4);
+    font-size: 0.813rem;
+    font-weight: 500;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.5);
     color: #ffffff;
 }
 
 .btn-sm:hover {
-    background: rgba(255,255,255,0.15);
-    border-color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.8);
 }
 
 /* Dashboard */
