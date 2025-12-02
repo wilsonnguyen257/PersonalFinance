@@ -1,0 +1,17 @@
+{
+  "name": "personal-finance",
+  "version": "1.0.0",
+  "description": "Personal Finance Manager - Focus on what matters",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@vercel/kv": "^1.0.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.x"
+  }
+}

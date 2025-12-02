@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 Personal Finance</h1>
+            <p class="subtitle">Focus on what matters</p>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="app.exportData()" title="Export your data">📥 Export</button>
+                <button class="btn btn-secondary" onclick="app.importData()" title="Import data">📤 Import</button>
+            </div>
+        </header>
+
+        <!-- Net Worth Dashboard -->
+        <section class="dashboard">
+            <div class="net-worth-card">
+                <h2>Net Worth</h2>
+                <div class="net-worth-amount" id="netWorth">$0</div>
+                <div class="net-worth-breakdown">
+                    <div class="breakdown-item">
+                        <span class="label">Assets</span>
+                        <span class="value positive" id="totalAssets">$0</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="label">Liabilities</span>
+                        <span class="value negative" id="totalLiabilities">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h3>This Month</h3>
+                    <div class="stat-value" id="monthlyIncome">$0</div>
+                    <div class="stat-label">Income</div>
+                </div>
+                <div class="stat-card">
+                    <h3>This Month</h3>
+                    <div class="stat-value" id="monthlyExpenses">$0</div>
+                    <div class="stat-label">Expenses</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Remaining</h3>
+                    <div class="stat-value" id="budgetRemaining">$0</div>
+                    <div class="stat-label">Budget</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accounts Overview -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Accounts</h2>
+                <button class="btn btn-primary" onclick="app.showAddAccountModal()">+ Add Account</button>
+            </div>
+            <div class="accounts-grid" id="accountsGrid">
+                <!-- Accounts will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Transactions -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Recent Transactions</h2>
+                <button class="btn btn-primary" onclick="app.showAddTransactionModal()">+ Add Transaction</button>
+            </div>
+            <div class="transaction-controls">
+                <input type="text" id="transactionSearch" placeholder="🔍 Search transactions..." 
+                       oninput="app.filterTransactions()">
+                <select id="transactionFilter" onchange="app.filterTransactions()">
+                    <option value="all">All Transactions</option>
+                    <option value="income">Income Only</option>
+                    <option value="expense">Expenses Only</option>
+                </select>
+            </div>
+            <div class="transactions-list" id="transactionsList">
+                <!-- Transactions will be dynamically added here -->
+            </div>
+        </section>
+
+        <!-- Spending Trends -->
+        <section class="section">
+            <h2 style="margin-bottom: 1.5rem;">Monthly Spending Trends</h2>
+            <div class="trends-chart" id="trendsChart">
+                <!-- Chart will be rendered here -->
+            </div>
+        </section>
+
+        <!-- Budget Management -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Budget Categories</h2>
+                <button class="btn btn-primary" onclick="app.showAddBudgetModal()">+ Add Budget</button>
+            </div>
+            <div class="budget-list" id="budgetList">
+                <!-- Budget categories will be dynamically added here -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Adding Account -->
+    <div id="accountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Account</h3>
+                <span class="close" onclick="app.closeModal('accountModal')">&times;</span>
+            </div>
+            <form id="accountForm" onsubmit="app.addAccount(event)">
+                <div class="form-group">
+                    <label>Account Name</label>
+                    <input type="text" id="accountName" required placeholder="e.g., Checking Account">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="accountType" required>
+                        <option value="checking">Checking</option>
+                        <option value="savings">Savings</option>
+                        <option value="investment">Investment</option>
+                        <option value="credit">Credit Card</option>
+                        <option value="loan">Loan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Current Balance</label>
+                    <input type="number" id="accountBalance" step="0.01" required placeholder="0.00">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Transaction -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Transaction</h3>
+                <span class="close" onclick="app.closeModal('transactionModal')">&times;</span>
+            </div>
+            <form id="transactionForm" onsubmit="app.addTransaction(event)">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="transactionType" required>
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="transactionDescription" required placeholder="e.g., Grocery shopping">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="transactionAmount" step="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="transactionCategory" required placeholder="e.g., Food">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="transactionDate" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add Transaction</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Budget -->
+    <div id="budgetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Budget Category</h3>
+                <span class="close" onclick="app.closeModal('budgetModal')">&times;</span>
+            </div>
+            <form id="budgetForm" onsubmit="app.addBudget(event)">
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="budgetCategory" required placeholder="e.g., Groceries">
+                </div>
+                <div class="form-group">
+                    <label>Monthly Limit</label>
+                    <input type="number" id="budgetLimit" step="0.01" required placeholder="0.00">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Add Budget</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="app.handleFileImport(event)">
+
+    <!-- Keyboard Shortcuts Toast -->
+    <div id="shortcutsToast" class="toast">
+        <div class="toast-header">
+            <strong>⌨️ Keyboard Shortcuts</strong>
+            <span class="close" onclick="app.hideToast()">&times;</span>
+        </div>
+        <div class="toast-body">
+            <div><kbd>A</kbd> Add Account</div>
+            <div><kbd>T</kbd> Add Transaction</div>
+            <div><kbd>B</kbd> Add Budget</div>
+            <div><kbd>?</kbd> Show Shortcuts</div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
