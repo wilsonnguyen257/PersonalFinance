@@ -556,9 +556,13 @@ class PersonalFinanceApp {
         // Populate account dropdown
         const accountSelect = document.getElementById('transactionAccount');
         accountSelect.innerHTML = '<option value="">-- No Account --</option>' +
-            this.accounts.map(acc => 
-                `<option value="${acc.id}">${acc.name} (${this.formatCurrency(acc.balance)})</option>`
-            ).join('');
+            this.accounts.map(acc => {
+                const isLiability = ['credit', 'loan'].includes(acc.type);
+                const displayBalance = isLiability && acc.balance > 0
+                    ? `Owe ${this.formatCurrency(acc.balance)}`
+                    : this.formatCurrency(acc.balance);
+                return `<option value="${acc.id}">${acc.name} - ${displayBalance}</option>`;
+            }).join('');
         
         document.getElementById('transactionModal').classList.add('active');
     }
@@ -634,6 +638,17 @@ class PersonalFinanceApp {
         }).format(amount);
     }
 
+    formatAccountType(type) {
+        const typeLabels = {
+            'checking': 'Checking',
+            'savings': 'Savings',
+            'investment': 'Investment',
+            'credit': 'Credit Card',
+            'loan': 'Loan'
+        };
+        return typeLabels[type] || type;
+    }
+
     formatDate(dateString) {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
@@ -666,19 +681,28 @@ class PersonalFinanceApp {
             return;
         }
 
-        grid.innerHTML = this.accounts.map(account => `
-            <div class="account-card">
-                <div class="account-header">
-                    <div class="account-name">${account.name}</div>
-                    <div class="account-type">${account.type}</div>
+        grid.innerHTML = this.accounts.map(account => {
+            // For assets (checking, savings, investment): positive = green, negative = red
+            // For liabilities (credit, loan): positive = red (debt), negative = green (credit)
+            const isLiability = ['credit', 'loan'].includes(account.type);
+            const balanceClass = isLiability 
+                ? (account.balance > 0 ? 'negative' : 'positive')
+                : (account.balance >= 0 ? 'positive' : 'negative');
+            
+            return `
+                <div class="account-card">
+                    <div class="account-header">
+                        <div class="account-name">${account.name}</div>
+                        <div class="account-type">${this.formatAccountType(account.type)}</div>
+                    </div>
+                    <div class="account-balance ${balanceClass}">
+                        ${this.formatCurrency(Math.abs(account.balance))}
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 0.75rem; font-size: 0.75rem; padding: 0.5rem;" 
+                            onclick="app.deleteAccount(${account.id})">Delete</button>
                 </div>
-                <div class="account-balance ${account.balance >= 0 ? 'positive' : 'negative'}">
-                    ${this.formatCurrency(account.balance)}
-                </div>
-                <button class="btn btn-primary" style="margin-top: 0.75rem; font-size: 0.75rem; padding: 0.5rem;" 
-                        onclick="app.deleteAccount(${account.id})">Delete</button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     renderTransactions() {
