@@ -363,14 +363,37 @@ class PersonalFinanceApp {
     async addTransaction(event) {
         event.preventDefault();
 
+        const accountId = document.getElementById('transactionAccount').value;
+        const type = document.getElementById('transactionType').value;
+        const amount = parseFloat(document.getElementById('transactionAmount').value);
+
+        // Validate amount
+        if (amount <= 0) {
+            alert('Amount must be greater than zero');
+            return;
+        }
+
         const transaction = {
             id: Date.now(),
-            type: document.getElementById('transactionType').value,
+            type: type,
             description: document.getElementById('transactionDescription').value,
-            amount: parseFloat(document.getElementById('transactionAmount').value),
+            amount: amount,
             category: document.getElementById('transactionCategory').value,
-            date: document.getElementById('transactionDate').value
+            date: document.getElementById('transactionDate').value,
+            accountId: accountId || null
         };
+
+        // Update account balance if account is selected
+        if (accountId) {
+            const account = this.accounts.find(acc => acc.id === parseInt(accountId));
+            if (account) {
+                if (type === 'income') {
+                    account.balance += amount;
+                } else if (type === 'expense') {
+                    account.balance -= amount;
+                }
+            }
+        }
 
         this.transactions.push(transaction);
         await this.saveData();
@@ -385,6 +408,20 @@ class PersonalFinanceApp {
 
     async deleteTransaction(id) {
         if (confirm('Are you sure you want to delete this transaction?')) {
+            const transaction = this.transactions.find(txn => txn.id === id);
+            
+            // Restore account balance if transaction was linked to an account
+            if (transaction && transaction.accountId) {
+                const account = this.accounts.find(acc => acc.id === parseInt(transaction.accountId));
+                if (account) {
+                    if (transaction.type === 'income') {
+                        account.balance -= transaction.amount;
+                    } else if (transaction.type === 'expense') {
+                        account.balance += transaction.amount;
+                    }
+                }
+            }
+            
             this.transactions = this.transactions.filter(txn => txn.id !== id);
             await this.saveData();
             this.render();
@@ -395,10 +432,28 @@ class PersonalFinanceApp {
     async addBudget(event) {
         event.preventDefault();
 
+        const limit = parseFloat(document.getElementById('budgetLimit').value);
+        const category = document.getElementById('budgetCategory').value.trim();
+
+        // Validate limit
+        if (limit <= 0) {
+            alert('Budget limit must be greater than zero');
+            return;
+        }
+
+        // Check for duplicate category
+        const existingBudget = this.budgets.find(b => 
+            b.category.trim().toLowerCase() === category.toLowerCase()
+        );
+        if (existingBudget) {
+            alert(`Budget for "${category}" already exists`);
+            return;
+        }
+
         const budget = {
             id: Date.now(),
-            category: document.getElementById('budgetCategory').value,
-            limit: parseFloat(document.getElementById('budgetLimit').value)
+            category: category,
+            limit: limit
         };
 
         this.budgets.push(budget);
@@ -440,9 +495,11 @@ class PersonalFinanceApp {
             .filter(acc => assetTypes.includes(acc.type))
             .reduce((sum, acc) => sum + acc.balance, 0);
 
+        // For liabilities, if balance is positive, it represents debt (what you owe)
+        // If negative, it means you have a credit (rare for loans/credit cards)
         const liabilities = this.accounts
             .filter(acc => liabilityTypes.includes(acc.type))
-            .reduce((sum, acc) => sum + Math.abs(acc.balance), 0);
+            .reduce((sum, acc) => sum + acc.balance, 0);
 
         return {
             netWorth: assets - liabilities,
@@ -469,8 +526,7 @@ class PersonalFinanceApp {
             .filter(txn => txn.type === 'expense')
             .reduce((sum, txn) => sum + txn.amount, 0);
 
-        const totalBudget = this.budgets.reduce((sum, budget) => sum + budget.limit, 0);
-        const remaining = totalBudget - expenses;
+        const remaining = income - expenses;
 
         return { income, expenses, remaining };
     }
@@ -484,7 +540,7 @@ class PersonalFinanceApp {
             .filter(txn => {
                 const txnDate = new Date(txn.date);
                 return txn.type === 'expense' && 
-                       txn.category.toLowerCase() === category.toLowerCase() &&
+                       txn.category.trim().toLowerCase() === category.trim().toLowerCase() &&
                        txnDate.getMonth() === currentMonth && 
                        txnDate.getFullYear() === currentYear;
             })
@@ -497,6 +553,13 @@ class PersonalFinanceApp {
     }
 
     showAddTransactionModal() {
+        // Populate account dropdown
+        const accountSelect = document.getElementById('transactionAccount');
+        accountSelect.innerHTML = '<option value="">-- No Account --</option>' +
+            this.accounts.map(acc => 
+                `<option value="${acc.id}">${acc.name} (${this.formatCurrency(acc.balance)})</option>`
+            ).join('');
+        
         document.getElementById('transactionModal').classList.add('active');
     }
 
@@ -649,8 +712,9 @@ class PersonalFinanceApp {
 
         // Sort by date (most recent first)
         const sorted = [...displayTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const limitedTransactions = sorted.slice(0, 20);
         
-        list.innerHTML = sorted.slice(0, 20).map(txn => `
+        list.innerHTML = limitedTransactions.map(txn => `
             <div class="transaction-item ${txn.type}">
                 <div class="transaction-info">
                     <div class="transaction-description">${txn.description}</div>
@@ -666,6 +730,15 @@ class PersonalFinanceApp {
                         onclick="app.deleteTransaction(${txn.id})">×</button>
             </div>
         `).join('');
+        
+        // Add message if there are more transactions than shown
+        if (sorted.length > 20) {
+            list.innerHTML += `
+                <div style="text-align: center; padding: 1rem; color: #888; font-size: 0.9rem;">
+                    Showing 20 of ${sorted.length} transactions. Use search/filter to find specific transactions.
+                </div>
+            `;
+        }
     }
 
     renderBudgets() {
